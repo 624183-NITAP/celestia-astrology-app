@@ -17,13 +17,25 @@ import InsightsScreen from '../../features/insights/screens/InsightsScreen';
 import CompatibilityScreen from '../../features/compatibility/screens/CompatibilityScreen';
 import ChatScreen from '../../features/chat/screens/ChatScreen';
 import ProfileScreen from '../../features/profile/screens/ProfileScreen';
+import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import { useUserStore } from '../../store/useUserStore';
 import { Colors } from '../../shared/theme';
 
 const Stack = createNativeStackNavigator();
+const ProfileStackNav = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+/** Nested stack: Profile → Settings */
+function ProfileStack() {
+  return (
+    <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStackNav.Screen name="ProfileMain" component={ProfileScreen} />
+      <ProfileStackNav.Screen name="Settings" component={SettingsScreen} />
+    </ProfileStackNav.Navigator>
+  );
+}
 
 function MainTabNavigator() {
   return (
@@ -57,7 +69,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Insights" component={InsightsScreen} />
       <Tab.Screen name="Compatibility" component={CompatibilityScreen} />
       <Tab.Screen name="AI Chat" component={ChatScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );
 }

@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, SafeAreaView, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useUserStore } from '../../../store/useUserStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { CosmicBackground, GlassCard, Button } from '../../../shared/components';
-import { Colors, TextStyles, Spacing } from '../../../shared/theme';
+import { Colors, TextStyles, Spacing, FontSize, FontWeight, BorderRadius } from '../../../shared/theme';
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<any>();
   const { profile, setProfile } = useUserStore();
   const { logout } = useAuthStore();
 
@@ -67,6 +69,19 @@ export default function ProfileScreen() {
               <Text style={styles.value}>Active Voyager</Text>
             </View>
           </GlassCard>
+
+          {/* Settings shortcut */}
+          <TouchableOpacity
+            style={styles.settingsRow}
+            onPress={() => navigation.navigate('Settings')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.settingsRowLeft}>
+              <Text style={styles.settingsRowIcon}>⚙️</Text>
+              <Text style={styles.settingsRowLabel}>Settings</Text>
+            </View>
+            <Text style={styles.settingsRowChevron}>›</Text>
+          </TouchableOpacity>
 
           {/* Action buttons */}
           <Button
@@ -194,5 +209,35 @@ const styles = StyleSheet.create({
   logoutBtn: {
     width: '100%',
     marginBottom: Spacing.xl,
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.glass.background,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.glass.border,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.base,
+    minHeight: 56,
+  },
+  settingsRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  settingsRowIcon: {
+    fontSize: 22,
+  },
+  settingsRowLabel: {
+    color: Colors.text.primary,
+    fontSize: FontSize.base,
+    fontWeight: FontWeight.semiBold,
+  },
+  settingsRowChevron: {
+    color: Colors.text.muted,
+    fontSize: 24,
+    lineHeight: 28,
   },
 });
