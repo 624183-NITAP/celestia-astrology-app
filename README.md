@@ -1,6 +1,8 @@
 # Celestia - Astrology & Cosmic Insights App ✨
 
-![Celestia Banner](./assets/placeholder-banner.png)
+![Celestia Banner]
+<img width="1024" height="1024" alt="icon" src="https://github.com/user-attachments/assets/5f1231c7-9c45-4de3-a176-9118b761f6b8" />
+
 
 *A premium, beautifully crafted React Native application delivering personalized astrological insights, synastry tracking, and cosmic timelines.*
 
@@ -22,7 +24,10 @@ The app is built entirely with **React Native (Expo)**, relying on robust local 
 - **🌌 Animated Cosmic Background**: Drifting, twinkling cosmic backgrounds running cleanly on the native UI thread.
 
 ## 📸 Screenshots
-*(Add high-fidelity screenshots of the Home, Birth Chart, and Horoscope screens here)*
+<img width="1917" height="866" alt="image" src="https://github.com/user-attachments/assets/1aa5c854-34e1-424c-976f-c188a2064dc7" />
+<img width="1920" height="869" alt="image" src="https://github.com/user-attachments/assets/1a63a4f4-f58c-424d-90fb-b8d987cc93d2" />
+<img width="1913" height="872" alt="image" src="https://github.com/user-attachments/assets/d39700e9-d93d-4be7-a2a3-8537fff72c0b" />
+
 
 ## 🛠 Tech Stack
 - **Framework**: React Native & Expo SDK 57
