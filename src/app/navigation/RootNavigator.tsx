@@ -13,7 +13,7 @@ import ProfileCreationScreen from '../../features/onboarding/screens/ProfileCrea
 
 import HomeScreen from '../../features/home/screens/HomeScreen';
 import HoroscopeScreen from '../../features/horoscope/screens/HoroscopeScreen';
-import InsightsScreen from '../../features/insights/screens/InsightsScreen';
+import BirthChartScreen from '../../features/birthchart/screens/BirthChartScreen';
 import CompatibilityScreen from '../../features/compatibility/screens/CompatibilityScreen';
 import ChatScreen from '../../features/chat/screens/ChatScreen';
 import ProfileScreen from '../../features/profile/screens/ProfileScreen';
@@ -55,7 +55,7 @@ function MainTabNavigator() {
           let icon = '✨';
           if (route.name === 'Home') icon = '🏠';
           else if (route.name === 'Horoscope') icon = '🔮';
-          else if (route.name === 'Insights') icon = '📈';
+          else if (route.name === 'Birth Chart') icon = '📊';
           else if (route.name === 'Compatibility') icon = '💕';
           else if (route.name === 'AI Chat') icon = '💬';
           else if (route.name === 'Profile') icon = '👤';
@@ -66,7 +66,7 @@ function MainTabNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Horoscope" component={HoroscopeScreen} />
-      <Tab.Screen name="Insights" component={InsightsScreen} />
+      <Tab.Screen name="Birth Chart" component={BirthChartScreen} />
       <Tab.Screen name="Compatibility" component={CompatibilityScreen} />
       <Tab.Screen name="AI Chat" component={ChatScreen} />
       <Tab.Screen name="Profile" component={ProfileStack} />

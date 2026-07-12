@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuthStore } from '../store/useAuthStore';
+import { useUserStore } from '../../../store/useUserStore';
+import { getSunSign, getMoonSign, getRisingSign } from '../../../shared/utils/astrology';
 import { CosmicBackground, GlassCard, Button, Input } from '../../../shared/components';
 import { Colors, TextStyles, Spacing } from '../../../shared/theme';
 
@@ -8,6 +10,7 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, continueAsGuest, isLoading } = useAuthStore();
+  const { setProfile } = useUserStore();
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
 
@@ -36,10 +39,21 @@ export default function LoginScreen({ navigation }: any) {
 
     try {
       await login(email);
+      // Mock returning user: auto-create profile so they skip onboarding
+      const mockDate = new Date(1995, 5, 15);
+      setProfile({
+        name: email.split('@')[0],
+        birthDate: mockDate.toISOString(),
+        birthTime: '12:00',
+        birthLocation: 'New York, USA',
+        sunSign: getSunSign(mockDate).name,
+        moonSign: getMoonSign(mockDate, '12:00').name,
+        risingSign: getRisingSign(mockDate, '12:00', 'New York, USA').name,
+      });
     } catch (e) {
       setError('Invalid credentials');
     }
-  }, [email, password, login]);
+  }, [email, password, login, setProfile]);
 
   return (
     <CosmicBackground variant="auth">
@@ -102,7 +116,19 @@ export default function LoginScreen({ navigation }: any) {
             <Button
               title="Continue as Guest"
               variant="secondary"
-              onPress={continueAsGuest}
+              onPress={() => {
+                continueAsGuest();
+                const mockDate = new Date(2000, 0, 1);
+                setProfile({
+                  name: 'Guest',
+                  birthDate: mockDate.toISOString(),
+                  birthTime: '12:00',
+                  birthLocation: 'Unknown',
+                  sunSign: getSunSign(mockDate).name,
+                  moonSign: getMoonSign(mockDate, '12:00').name,
+                  risingSign: getRisingSign(mockDate, '12:00', 'Unknown').name,
+                });
+              }}
               style={styles.guestBtn}
             />
           </GlassCard>
