@@ -20,8 +20,6 @@ interface ProgressRingProps {
   valueSize?: number;
 }
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
 export const ProgressRing: React.FC<ProgressRingProps> = ({
   progress,
   size = 120,
@@ -38,6 +36,17 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
+  // Track the animated offset in state so we can pass it to a plain <Circle>
+  const [currentOffset, setCurrentOffset] = React.useState(circumference);
+
+  useEffect(() => {
+    const listenerId = animatedValue.addListener(({ value: v }) => {
+      const offset = circumference - (circumference * v) / 100;
+      setCurrentOffset(offset);
+    });
+    return () => animatedValue.removeListener(listenerId);
+  }, [circumference]);
+
   useEffect(() => {
     if (animated) {
       Animated.timing(animatedValue, {
@@ -50,12 +59,6 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
       animatedValue.setValue(progress);
     }
   }, [progress, animated, duration]);
-
-  const strokeDashoffset = animatedValue.interpolate({
-    inputRange: [0, 100],
-    outputRange: [circumference, 0],
-    extrapolate: 'clamp',
-  });
 
   const displayValue = animatedValue.interpolate({
     inputRange: [0, 100],
@@ -84,16 +87,16 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
           strokeWidth={strokeWidth}
           fill="none"
         />
-        {/* Progress circle */}
-        <AnimatedCircle
+        {/* Progress circle — plain Circle driven by state */}
+        <Circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           stroke={strokeColor || 'url(#progressGrad)'}
           strokeWidth={strokeWidth}
           fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          strokeDasharray={`${circumference}`}
+          strokeDashoffset={currentOffset}
           strokeLinecap="round"
         />
       </Svg>
