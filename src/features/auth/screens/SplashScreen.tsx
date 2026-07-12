@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Animated, Image } from 'react-native';
-import { useAuthStore } from '../store/useAuthStore';
 import { CosmicBackground } from '../../../shared/components';
 import { Colors, TextStyles, Spacing } from '../../../shared/theme';
 
 export default function SplashScreen({ navigation }: any) {
-  const { isAuthenticated } = useAuthStore();
   const ring1Scale = useRef(new Animated.Value(0.4)).current;
   const ring2Scale = useRef(new Animated.Value(0.4)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -48,17 +46,13 @@ export default function SplashScreen({ navigation }: any) {
       ),
     ]).start();
 
-    // Auto navigate after 3.5 seconds
+    // Auto navigate to Login after 3.5 seconds
     const timer = setTimeout(() => {
-      if (isAuthenticated) {
-        navigation.navigate('Main');
-      } else {
-        navigation.navigate('Login');
-      }
+      navigation.replace('Login');
     }, 3500);
 
     return () => clearTimeout(timer);
-  }, [isAuthenticated, navigation]);
+  }, [navigation]);
 
   return (
     <CosmicBackground variant="auth">

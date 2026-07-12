@@ -16,7 +16,9 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  Pressable,
   Dimensions,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -125,6 +127,9 @@ function getAspectColor(type: string): string {
   }
 }
 
+// ─── Hit target size for planet tap areas ────────────────────────────────────
+const PLANET_HIT_SIZE = 30;
+
 // ─── ZodiacWheel SVG ─────────────────────────────────────────────────────────
 
 interface WheelProps {
@@ -134,168 +139,193 @@ interface WheelProps {
 
 const ZodiacWheel: React.FC<WheelProps> = ({ selectedPlanet, onPlanetPress }) => {
   return (
-    <Svg width={WHEEL_SIZE} height={WHEEL_SIZE} viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}>
-      <Defs>
-        {/* Radial gradient for core glow */}
-        <RadialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-          <Stop offset="0%" stopColor={Colors.accent.purple} stopOpacity="0.9" />
-          <Stop offset="60%" stopColor={Colors.accent.indigo} stopOpacity="0.6" />
-          <Stop offset="100%" stopColor={Colors.accent.purple} stopOpacity="0" />
-        </RadialGradient>
-        {/* Outer ring gradient */}
-        <RadialGradient id="outerRing" cx="50%" cy="50%" r="50%">
-          <Stop offset="80%" stopColor="rgba(212,175,55,0)" stopOpacity="0" />
-          <Stop offset="100%" stopColor={Colors.accent.gold} stopOpacity="0.15" />
-        </RadialGradient>
-      </Defs>
+    <View style={{ width: WHEEL_SIZE, height: WHEEL_SIZE }}>
+      <Svg width={WHEEL_SIZE} height={WHEEL_SIZE} viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}>
+        <Defs>
+          {/* Radial gradient for core glow */}
+          <RadialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+            <Stop offset="0%" stopColor={Colors.accent.purple} stopOpacity="0.9" />
+            <Stop offset="60%" stopColor={Colors.accent.indigo} stopOpacity="0.6" />
+            <Stop offset="100%" stopColor={Colors.accent.purple} stopOpacity="0" />
+          </RadialGradient>
+          {/* Outer ring gradient */}
+          <RadialGradient id="outerRing" cx="50%" cy="50%" r="50%">
+            <Stop offset="80%" stopColor="rgba(212,175,55,0)" stopOpacity="0" />
+            <Stop offset="100%" stopColor={Colors.accent.gold} stopOpacity="0.15" />
+          </RadialGradient>
+        </Defs>
 
-      {/* ── Background fill of outer ring ── */}
-      <Circle cx={CX} cy={CY} r={R_OUTER} fill="rgba(0,0,0,0.4)" />
-      <Circle cx={CX} cy={CY} r={R_OUTER} fill="url(#outerRing)" />
+        {/* ── Background fill of outer ring ── */}
+        <Circle cx={CX} cy={CY} r={R_OUTER} fill="rgba(0,0,0,0.4)" />
+        <Circle cx={CX} cy={CY} r={R_OUTER} fill="url(#outerRing)" />
 
-      {/* ── Zodiac sign band ── */}
-      {ZODIAC_SIGNS.map((sign, i) => {
-        const startDeg = i * 30;
-        const midDeg = startDeg + 15;
-        const midPos = polarToXY(CX, CY, (R_OUTER + R_ZODIAC_INNER) / 2, midDeg);
-        // Draw divider spoke for each sign
-        const outerPt = polarToXY(CX, CY, R_OUTER, startDeg);
-        const innerPt = polarToXY(CX, CY, R_ZODIAC_INNER, startDeg);
-        return (
-          <G key={sign.name}>
-            {/* Divider line */}
+        {/* ── Zodiac sign band ── */}
+        {ZODIAC_SIGNS.map((sign, i) => {
+          const startDeg = i * 30;
+          const midDeg = startDeg + 15;
+          const midPos = polarToXY(CX, CY, (R_OUTER + R_ZODIAC_INNER) / 2, midDeg);
+          // Draw divider spoke for each sign
+          const outerPt = polarToXY(CX, CY, R_OUTER, startDeg);
+          const innerPt = polarToXY(CX, CY, R_ZODIAC_INNER, startDeg);
+          return (
+            <G key={sign.name}>
+              {/* Divider line */}
+              <Line
+                x1={outerPt.x} y1={outerPt.y}
+                x2={innerPt.x} y2={innerPt.y}
+                stroke={Colors.glass.border}
+                strokeWidth={1}
+              />
+              {/* Sign glyph */}
+              <SvgText
+                x={midPos.x}
+                y={midPos.y + 5}
+                textAnchor="middle"
+                fill={sign.color}
+                fontSize={12}
+                fontWeight="700"
+                opacity={0.9}
+              >
+                {sign.symbol}
+              </SvgText>
+            </G>
+          );
+        })}
+
+        {/* ── Outer ring border ── */}
+        <Circle cx={CX} cy={CY} r={R_OUTER} stroke={Colors.accent.gold} strokeWidth={1.5} fill="none" strokeOpacity={0.6} />
+        <Circle cx={CX} cy={CY} r={R_ZODIAC_INNER} stroke={Colors.glass.border} strokeWidth={1} fill="none" />
+
+        {/* ── House division ring ── */}
+        <Circle cx={CX} cy={CY} r={R_ZODIAC_INNER} fill="rgba(255,255,255,0.02)" />
+        {HOUSES.map((house, i) => {
+          const startDeg = i * 30;
+          const midDeg = startDeg + 15;
+          const midPos = polarToXY(CX, CY, (R_ZODIAC_INNER + R_HOUSE_INNER) / 2, midDeg);
+          const outerPt = polarToXY(CX, CY, R_ZODIAC_INNER, startDeg);
+          const innerPt = polarToXY(CX, CY, R_HOUSE_INNER, startDeg);
+          return (
+            <G key={house.number}>
+              <Line
+                x1={outerPt.x} y1={outerPt.y}
+                x2={innerPt.x} y2={innerPt.y}
+                stroke="rgba(255,255,255,0.12)"
+                strokeWidth={1}
+              />
+              <SvgText
+                x={midPos.x}
+                y={midPos.y + 4}
+                textAnchor="middle"
+                fill="rgba(255,255,255,0.35)"
+                fontSize={8}
+                fontWeight="600"
+              >
+                {house.number}
+              </SvgText>
+            </G>
+          );
+        })}
+        <Circle cx={CX} cy={CY} r={R_HOUSE_INNER} stroke={Colors.glass.borderLight} strokeWidth={1} fill="rgba(0,0,0,0.3)" />
+
+        {/* ── Aspect lines ── */}
+        {MOCK_ASPECTS.map(([aId, bId, type], idx) => {
+          const posA = PLANET_POSITIONS[aId];
+          const posB = PLANET_POSITIONS[bId];
+          if (!posA || !posB) return null;
+          const ptA = polarToXY(CX, CY, R_PLANET - 6, posA.degree);
+          const ptB = polarToXY(CX, CY, R_PLANET - 6, posB.degree);
+          const color = getAspectColor(type);
+          const isHighlighted = selectedPlanet === aId || selectedPlanet === bId;
+          return (
             <Line
-              x1={outerPt.x} y1={outerPt.y}
-              x2={innerPt.x} y2={innerPt.y}
-              stroke={Colors.glass.border}
-              strokeWidth={1}
+              key={idx}
+              x1={ptA.x} y1={ptA.y}
+              x2={ptB.x} y2={ptB.y}
+              stroke={color}
+              strokeWidth={isHighlighted ? 1.5 : 0.8}
+              strokeOpacity={isHighlighted ? 0.85 : 0.3}
+              strokeDasharray={type === 'square' || type === 'opposition' ? '4,3' : undefined}
             />
-            {/* Sign glyph */}
-            <SvgText
-              x={midPos.x}
-              y={midPos.y + 5}
-              textAnchor="middle"
-              fill={sign.color}
-              fontSize={12}
-              fontWeight="700"
-              opacity={0.9}
-            >
-              {sign.symbol}
-            </SvgText>
-          </G>
-        );
-      })}
+          );
+        })}
 
-      {/* ── Outer ring border ── */}
-      <Circle cx={CX} cy={CY} r={R_OUTER} stroke={Colors.accent.gold} strokeWidth={1.5} fill="none" strokeOpacity={0.6} />
-      <Circle cx={CX} cy={CY} r={R_ZODIAC_INNER} stroke={Colors.glass.border} strokeWidth={1} fill="none" />
+        {/* ── Planet glyphs (no onPress on <G>, handled via overlay) ── */}
+        {PLANETS.slice(0, 10).map((planet) => {
+          const pos = PLANET_POSITIONS[planet.id];
+          if (!pos) return null;
+          const pt = polarToXY(CX, CY, R_PLANET, pos.degree);
+          const isSelected = selectedPlanet === planet.id;
+          return (
+            <G key={planet.id}>
+              {/* Selection halo */}
+              {isSelected && (
+                <Circle cx={pt.x} cy={pt.y} r={13} fill={planet.color} fillOpacity={0.25} />
+              )}
+              {/* Planet dot */}
+              <Circle
+                cx={pt.x}
+                cy={pt.y}
+                r={isSelected ? 9 : 7}
+                fill={planet.color}
+                fillOpacity={isSelected ? 1 : 0.85}
+              />
+              {/* Planet symbol */}
+              <SvgText
+                x={pt.x}
+                y={pt.y + 4}
+                textAnchor="middle"
+                fill="#FFFFFF"
+                fontSize={isSelected ? 9 : 8}
+                fontWeight="700"
+              >
+                {planet.symbol}
+              </SvgText>
+            </G>
+          );
+        })}
 
-      {/* ── House division ring ── */}
-      <Circle cx={CX} cy={CY} r={R_ZODIAC_INNER} fill="rgba(255,255,255,0.02)" />
-      {HOUSES.map((house, i) => {
-        const startDeg = i * 30;
-        const midDeg = startDeg + 15;
-        const midPos = polarToXY(CX, CY, (R_ZODIAC_INNER + R_HOUSE_INNER) / 2, midDeg);
-        const outerPt = polarToXY(CX, CY, R_ZODIAC_INNER, startDeg);
-        const innerPt = polarToXY(CX, CY, R_HOUSE_INNER, startDeg);
-        return (
-          <G key={house.number}>
-            <Line
-              x1={outerPt.x} y1={outerPt.y}
-              x2={innerPt.x} y2={innerPt.y}
-              stroke="rgba(255,255,255,0.12)"
-              strokeWidth={1}
-            />
-            <SvgText
-              x={midPos.x}
-              y={midPos.y + 4}
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.35)"
-              fontSize={8}
-              fontWeight="600"
-            >
-              {house.number}
-            </SvgText>
-          </G>
-        );
-      })}
-      <Circle cx={CX} cy={CY} r={R_HOUSE_INNER} stroke={Colors.glass.borderLight} strokeWidth={1} fill="rgba(0,0,0,0.3)" />
+        {/* ── Axis lines (ASC/DSC + MC/IC) ── */}
+        <Line x1={8} y1={CY} x2={WHEEL_SIZE - 8} y2={CY} stroke={Colors.accent.gold} strokeWidth={0.6} strokeOpacity={0.4} />
+        <Line x1={CX} y1={8} x2={CX} y2={WHEEL_SIZE - 8} stroke={Colors.accent.gold} strokeWidth={0.6} strokeOpacity={0.4} />
 
-      {/* ── Aspect lines ── */}
-      {MOCK_ASPECTS.map(([aId, bId, type], idx) => {
-        const posA = PLANET_POSITIONS[aId];
-        const posB = PLANET_POSITIONS[bId];
-        if (!posA || !posB) return null;
-        const ptA = polarToXY(CX, CY, R_PLANET - 6, posA.degree);
-        const ptB = polarToXY(CX, CY, R_PLANET - 6, posB.degree);
-        const color = getAspectColor(type);
-        const isHighlighted = selectedPlanet === aId || selectedPlanet === bId;
-        return (
-          <Line
-            key={idx}
-            x1={ptA.x} y1={ptA.y}
-            x2={ptB.x} y2={ptB.y}
-            stroke={color}
-            strokeWidth={isHighlighted ? 1.5 : 0.8}
-            strokeOpacity={isHighlighted ? 0.85 : 0.3}
-            strokeDasharray={type === 'square' || type === 'opposition' ? '4,3' : undefined}
-          />
-        );
-      })}
+        {/* ASC / DSC labels */}
+        <SvgText x={14} y={CY - 5} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>ASC</SvgText>
+        <SvgText x={WHEEL_SIZE - 30} y={CY - 5} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>DSC</SvgText>
+        <SvgText x={CX - 10} y={16} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>MC</SvgText>
+        <SvgText x={CX - 8} y={WHEEL_SIZE - 6} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>IC</SvgText>
 
-      {/* ── Planet glyphs ── */}
+        {/* ── Core glow ── */}
+        <Circle cx={CX} cy={CY} r={R_CORE * 2} fill="url(#coreGlow)" />
+        <Circle cx={CX} cy={CY} r={R_CORE} fill={Colors.background.deepSpace} />
+        <Circle cx={CX} cy={CY} r={R_CORE} stroke={Colors.accent.purple} strokeWidth={1.5} fill="none" strokeOpacity={0.8} />
+        <SvgText x={CX} y={CY + 5} textAnchor="middle" fill={Colors.accent.purpleLight} fontSize={13} fontWeight="700">
+          ✦
+        </SvgText>
+      </Svg>
+
+      {/* ── Pressable hit-targets overlaid on top of each planet glyph ── */}
       {PLANETS.slice(0, 10).map((planet) => {
         const pos = PLANET_POSITIONS[planet.id];
         if (!pos) return null;
         const pt = polarToXY(CX, CY, R_PLANET, pos.degree);
-        const isSelected = selectedPlanet === planet.id;
         return (
-          <G key={planet.id} onPress={() => onPlanetPress(planet.id)}>
-            {/* Selection halo */}
-            {isSelected && (
-              <Circle cx={pt.x} cy={pt.y} r={13} fill={planet.color} fillOpacity={0.25} />
-            )}
-            {/* Planet dot */}
-            <Circle
-              cx={pt.x}
-              cy={pt.y}
-              r={isSelected ? 9 : 7}
-              fill={planet.color}
-              fillOpacity={isSelected ? 1 : 0.85}
-            />
-            {/* Planet symbol */}
-            <SvgText
-              x={pt.x}
-              y={pt.y + 4}
-              textAnchor="middle"
-              fill="#FFFFFF"
-              fontSize={isSelected ? 9 : 8}
-              fontWeight="700"
-            >
-              {planet.symbol}
-            </SvgText>
-          </G>
+          <Pressable
+            key={planet.id}
+            onPress={() => onPlanetPress(planet.id)}
+            style={{
+              position: 'absolute',
+              left: pt.x - PLANET_HIT_SIZE / 2,
+              top: pt.y - PLANET_HIT_SIZE / 2,
+              width: PLANET_HIT_SIZE,
+              height: PLANET_HIT_SIZE,
+              borderRadius: PLANET_HIT_SIZE / 2,
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`Select ${planet.name}`}
+          />
         );
       })}
-
-      {/* ── Axis lines (ASC/DSC + MC/IC) ── */}
-      <Line x1={8} y1={CY} x2={WHEEL_SIZE - 8} y2={CY} stroke={Colors.accent.gold} strokeWidth={0.6} strokeOpacity={0.4} />
-      <Line x1={CX} y1={8} x2={CX} y2={WHEEL_SIZE - 8} stroke={Colors.accent.gold} strokeWidth={0.6} strokeOpacity={0.4} />
-
-      {/* ASC / DSC labels */}
-      <SvgText x={14} y={CY - 5} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>ASC</SvgText>
-      <SvgText x={WHEEL_SIZE - 30} y={CY - 5} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>DSC</SvgText>
-      <SvgText x={CX - 10} y={16} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>MC</SvgText>
-      <SvgText x={CX - 8} y={WHEEL_SIZE - 6} fill={Colors.accent.gold} fontSize={8} fontWeight="700" fillOpacity={0.7}>IC</SvgText>
-
-      {/* ── Core glow ── */}
-      <Circle cx={CX} cy={CY} r={R_CORE * 2} fill="url(#coreGlow)" />
-      <Circle cx={CX} cy={CY} r={R_CORE} fill={Colors.background.deepSpace} />
-      <Circle cx={CX} cy={CY} r={R_CORE} stroke={Colors.accent.purple} strokeWidth={1.5} fill="none" strokeOpacity={0.8} />
-      <SvgText x={CX} y={CY + 5} textAnchor="middle" fill={Colors.accent.purpleLight} fontSize={13} fontWeight="700">
-        ✦
-      </SvgText>
-    </Svg>
+    </View>
   );
 };
 

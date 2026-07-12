@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Animated } from 'react-native';
 import { useUserStore } from '../../../store/useUserStore';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import { CosmicBackground, GlassCard, Button } from '../../../shared/components';
 import { Colors, TextStyles, Spacing } from '../../../shared/theme';
 
 export default function ProfileCreationScreen({ navigation }: any) {
-  const { profile } = useUserStore();
+  const { pendingProfile, setOnboardingComplete } = useOnboardingStore();
+  const { setProfile } = useUserStore();
   const [analyzing, setAnalyzing] = useState(true);
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
@@ -33,8 +35,12 @@ export default function ProfileCreationScreen({ navigation }: any) {
   });
 
   const handleFinish = useCallback(() => {
-    navigation.navigate('Main');
-  }, [navigation]);
+    // Commit the staged profile to the user store — this triggers navigator switch to Main
+    if (pendingProfile) {
+      setProfile(pendingProfile);
+    }
+    setOnboardingComplete(true);
+  }, [pendingProfile, setProfile, setOnboardingComplete]);
 
   return (
     <CosmicBackground variant="onboarding">
@@ -49,23 +55,23 @@ export default function ProfileCreationScreen({ navigation }: any) {
           <View style={styles.resultContainer}>
             <Text style={[TextStyles.displaySmall, styles.congrats]}>Celestial Chart Ready</Text>
             <Text style={[TextStyles.body, styles.intro]}>
-              Greetings {profile?.name || 'Traveler'}. The stars have aligned to reveal your cosmic blueprint:
+              Greetings {pendingProfile?.name || 'Traveler'}. The stars have aligned to reveal your cosmic blueprint:
             </Text>
 
             <View style={styles.grid}>
               <GlassCard style={styles.signCard} variant="gold">
                 <Text style={styles.signLabel}>☀️ SUN SIGN</Text>
-                <Text style={styles.signValue}>{profile?.sunSign}</Text>
+                <Text style={styles.signValue}>{pendingProfile?.sunSign}</Text>
               </GlassCard>
 
               <GlassCard style={styles.signCard} variant="elevated">
                 <Text style={styles.signLabel}>🌙 MOON SIGN</Text>
-                <Text style={styles.signValue}>{profile?.moonSign}</Text>
+                <Text style={styles.signValue}>{pendingProfile?.moonSign}</Text>
               </GlassCard>
 
               <GlassCard style={styles.signCard} variant="accent">
                 <Text style={styles.signLabel}>⬆️ RISING SIGN</Text>
-                <Text style={styles.signValue}>{profile?.risingSign}</Text>
+                <Text style={styles.signValue}>{pendingProfile?.risingSign}</Text>
               </GlassCard>
             </View>
 

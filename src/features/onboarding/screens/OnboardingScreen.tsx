@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { getSunSign, getMoonSign, getRisingSign } from '../../../shared/utils/astrology';
-import { useUserStore } from '../../../store/useUserStore';
 import { CosmicBackground, GlassCard, Button, Input } from '../../../shared/components';
 import { Colors, TextStyles, Spacing } from '../../../shared/theme';
 
@@ -16,13 +15,13 @@ export default function OnboardingScreen({ navigation }: any) {
     setBirthDate,
     setBirthTime,
     setBirthLocation,
+    setPendingProfile,
   } = useOnboardingStore();
 
   const [step, setStep] = useState(1);
   const [dateInput, setDateInput] = useState('');
   const [timeInput, setTimeInput] = useState(birthTime);
   const [locationInput, setLocationInput] = useState(birthLocation);
-  const { setProfile } = useUserStore();
 
   const [nameError, setNameError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
@@ -69,8 +68,8 @@ export default function OnboardingScreen({ navigation }: any) {
       const moonSign = getMoonSign(bDate, timeInput);
       const risingSign = getRisingSign(bDate, timeInput, locationInput);
 
-      // Save to store
-      setProfile({
+      // Stage profile in onboarding store (not user store yet)
+      setPendingProfile({
         name: fullName,
         birthDate: bDate.toISOString(),
         birthTime: timeInput,
@@ -82,7 +81,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
       navigation.navigate('ProfileCreation');
     }
-  }, [step, fullName, dateInput, timeInput, locationInput, birthDate, setBirthDate, setBirthTime, setBirthLocation, setProfile, navigation]);
+  }, [step, fullName, dateInput, timeInput, locationInput, birthDate, setBirthDate, setBirthTime, setBirthLocation, setPendingProfile, navigation]);
 
   const handleBack = useCallback(() => {
     if (step > 1) {

@@ -90,15 +90,13 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 
   const shadow = variant === 'elevated' ? Shadows.cardElevated : Shadows.card;
 
-  const cardContent = (
+  const backgroundLayer = (
     <LinearGradient
       colors={gradientColors}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.gradient, { borderColor, padding }]}
-    >
-      {children}
-    </LinearGradient>
+      style={[StyleSheet.absoluteFill, { borderColor, borderWidth: 1, borderRadius: BorderRadius.lg }]}
+    />
   );
 
   return (
@@ -116,13 +114,16 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       <View style={[styles.container, shadow, style]}>
         {Platform.OS !== 'web' ? (
           <BlurView intensity={45} tint="dark" style={StyleSheet.absoluteFill}>
-            {cardContent}
+            {backgroundLayer}
           </BlurView>
         ) : (
           <View style={[StyleSheet.absoluteFill, styles.webGlassFallback]}>
-            {cardContent}
+            {backgroundLayer}
           </View>
         )}
+        <View style={{ padding }}>
+          {children}
+        </View>
       </View>
     </Animated.View>
   );

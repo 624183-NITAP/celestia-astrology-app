@@ -8,18 +8,21 @@ export default function RegisterScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const { register, isLoading } = useAuthStore();
   
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
 
   const handleRegister = useCallback(async () => {
     let hasError = false;
     setNameError(null);
     setEmailError(null);
     setPasswordError(null);
+    setConfirmPasswordError(null);
     setError(null);
 
     if (!name.trim()) {
@@ -43,6 +46,11 @@ export default function RegisterScreen({ navigation }: any) {
       hasError = true;
     }
 
+    if (confirmPassword !== password) {
+      setConfirmPasswordError('Passwords do not match');
+      hasError = true;
+    }
+
     if (hasError) return;
 
     try {
@@ -50,7 +58,7 @@ export default function RegisterScreen({ navigation }: any) {
     } catch (e) {
       setError('Failed to create account');
     }
-  }, [name, email, password, register]);
+  }, [name, email, password, confirmPassword, register]);
 
   return (
     <CosmicBackground variant="auth">
@@ -91,6 +99,15 @@ export default function RegisterScreen({ navigation }: any) {
                 autoCapitalize="none"
                 autoComplete="password-new"
                 error={passwordError}
+              />
+              <Input
+                label="Confirm Password"
+                value={confirmPassword}
+                onChangeText={(text) => { setConfirmPassword(text); setConfirmPasswordError(null); }}
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+                error={confirmPasswordError}
               />
             </View>
 
